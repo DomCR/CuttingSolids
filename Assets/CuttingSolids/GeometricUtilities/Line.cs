@@ -12,7 +12,7 @@ namespace CuttingSolids.GeometricUtilities
         {
             get
             {
-                return StartPoint - EndPoint;
+                return EndPoint - StartPoint;
             }
         }
 
@@ -20,6 +20,11 @@ namespace CuttingSolids.GeometricUtilities
         {
             StartPoint = start;
             EndPoint = end;
+        }
+        public Line(Vector3 start, Vector3 end, Transform transform)
+        {
+            StartPoint = transform.TransformPoint(start);
+            EndPoint = transform.TransformPoint(end);
         }
 
         /// <summary>
@@ -34,13 +39,41 @@ namespace CuttingSolids.GeometricUtilities
             Gizmos.color = tmpColor;
         }
 
-        public Vector3? PlaneIntersection(Vector3 planeNormal, Vector3 planeOrigin)
+        public Vector3? PlaneIntersection(Vector3 planeNormal, Vector3 planeOrigin, bool insideLine)
         {
+            //Parallel to plane, does not intersect
             if (Vector3.Dot(this.Vector.normalized, planeNormal) == 0)
                 return null;
 
-            float tp = Vector3.Dot(planeNormal, planeOrigin) - Vector3.Dot(planeNormal, this.StartPoint) /
+            float tp = (Vector3.Dot(planeNormal, planeOrigin) - Vector3.Dot(planeNormal, this.StartPoint)) /
                 Vector3.Dot(planeNormal, this.Vector.normalized);
+
+            Vector3 intersection = this.StartPoint + this.Vector.normalized * tp;
+
+            //Check if is inside the line 
+            if (insideLine)
+            {
+                Vector3 min = new Vector3();
+                min.x = StartPoint.x < EndPoint.x ? StartPoint.x : EndPoint.x;
+                min.y = StartPoint.y < EndPoint.y ? StartPoint.y : EndPoint.y;
+                min.z = StartPoint.z < EndPoint.z ? StartPoint.z : EndPoint.z;
+
+                Vector3 max = new Vector3();
+                max.x = StartPoint.x > EndPoint.x ? StartPoint.x : EndPoint.x;
+                max.y = StartPoint.y > EndPoint.y ? StartPoint.y : EndPoint.y;
+                max.z = StartPoint.z > EndPoint.z ? StartPoint.z : EndPoint.z;
+
+                if (min.x <= intersection.x && intersection.x <= max.x &&
+                    min.y <= intersection.y && intersection.y <= max.y &&
+                    min.z <= intersection.z && intersection.z <= max.z)
+                {
+                    return intersection;
+                }
+                else
+                {
+                    return null;
+                }
+            }
 
             return this.StartPoint + this.Vector.normalized * tp;
         }
