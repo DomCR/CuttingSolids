@@ -28,7 +28,5 @@ namespace CuttingSolids.GeometricUtilities
             //Get the second from the first one
             VVect = Vector3.Cross(UVect, Map.normal);
         }
-
-
     }
 }
