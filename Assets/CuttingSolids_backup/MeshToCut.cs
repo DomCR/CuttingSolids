@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using CuttingSolids.GeometricUtilities;
+using GeometricUtilities;
 using System.Linq;
+using UnityEditor;
 
 namespace CuttingSolids
 {
@@ -59,12 +60,13 @@ namespace CuttingSolids
 
             }
 
+            //*********************************************************************************
             // Create the mesh
             Mesh msh = new Mesh();
             msh.vertices = m_intersectionPoints.ToArray();
             msh.triangles = indices;
             msh.RecalculateNormals();
-            msh.RecalculateBounds();
+            //msh.RecalculateBounds();
 
             Section.GetComponent<MeshFilter>().mesh = msh;
 
@@ -90,6 +92,9 @@ namespace CuttingSolids
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawWireSphere(item, 0.02f);
+
+                //Gizmos.DrawIcon(item, "Hello");
+                //Handles.Label(item, "Text");
             }
         }
     }

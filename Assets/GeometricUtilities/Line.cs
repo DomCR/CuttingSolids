@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CuttingSolids.GeometricUtilities
+namespace GeometricUtilities
 {
     public class Line
     {
@@ -25,18 +25,6 @@ namespace CuttingSolids.GeometricUtilities
         {
             StartPoint = transform.TransformPoint(start);
             EndPoint = transform.TransformPoint(end);
-        }
-
-        /// <summary>
-        /// Draw the Line using Gizmos in unity interface
-        /// </summary>
-        /// <param name="color"></param>
-        public void DrawGizmos(Color color)
-        {
-            Color tmpColor = Gizmos.color;
-            Gizmos.color = color;
-            Gizmos.DrawLine(StartPoint, EndPoint);
-            Gizmos.color = tmpColor;
         }
 
         public Vector3? PlaneIntersection(Vector3 planeNormal, Vector3 planeOrigin, bool insideLine)
@@ -77,5 +65,22 @@ namespace CuttingSolids.GeometricUtilities
 
             return this.StartPoint + this.Vector.normalized * tp;
         }
+        public Vector3[] GetPoints()
+        {
+            return new Vector3[] { StartPoint, EndPoint };
+        }
+        //*********************************************************************************
+        /// <summary>
+        /// Draw the Line using Gizmos in unity interface
+        /// </summary>
+        /// <param name="color"></param>
+        public void DrawGizmos(Color color)
+        {
+            Color tmpColor = Gizmos.color;
+            Gizmos.color = color;
+            Gizmos.DrawLine(StartPoint, EndPoint);
+            Gizmos.color = tmpColor;
+        }
+
     }
 }

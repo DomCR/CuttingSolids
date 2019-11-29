@@ -5,15 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace CuttingSolids.GeometricUtilities
+namespace GeometricUtilities
 {
     public class Map2D
     {
         public Plane Map { get; set; }
         public Vector3 UVect { get; set; }
         public Vector3 VVect { get; set; }
+        public List<ReferencedPoint> References { get; set; }
 
-        public Map2D(Plane plane)
+        public Map2D()
+        {
+            References = new List<ReferencedPoint>();
+        }
+
+        public Map2D(Plane plane) : this()
         {
             Map = plane;
 
@@ -27,6 +33,11 @@ namespace CuttingSolids.GeometricUtilities
             }
             //Get the second from the first one
             VVect = Vector3.Cross(UVect, Map.normal);
+        }
+
+        public void AddReference(Vector3 point)
+        {
+            References.Add(new ReferencedPoint(point, this));
         }
     }
 }
