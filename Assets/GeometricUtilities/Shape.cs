@@ -11,12 +11,14 @@ namespace GeometricUtilities
     {
         public List<Vector3> Vertices { get; set; }
         public List<Line> Edges { get; set; }
+        public List<Vector2> UV { get; set; }
         public List<int> Triangles { get; set; }
 
         public Shape()
         {
-            Edges = new List<Line>();
             Vertices = new List<Vector3>();
+            Edges = new List<Line>();
+            UV = new List<Vector2>();
             Triangles = new List<int>();
         }
         //*********************************************************************************
@@ -42,9 +44,11 @@ namespace GeometricUtilities
             {
                 foreach (Line l in edgesCopy)
                 {
-                    if (l.GetPoints().Contains(currLine.EndPoint))
+                    //if (l.GetPoints().Contains(currLine.EndPoint))
+                    if (containsPoint(l.GetPoints(), currLine.EndPoint, 5))
                     {
-                        Line tmp = new Line(currLine.EndPoint, l.GetPoints().Where(p => !p.Equals(currLine.EndPoint)).First());
+                        Vector3 vtmp = l.GetPoints().Where(o => !almostEqual(o, currLine.EndPoint, 5)).First();
+                        Line tmp = new Line(currLine.EndPoint, vtmp);
                         toRemove = l;
                         sortedLines.Add(tmp);
                         currLine = tmp;
@@ -70,11 +74,15 @@ namespace GeometricUtilities
         public void ComputeMesh()
         {
             Vertices.Clear();
+            UV.Clear();
             foreach (Line l in Edges)
             {
                 Vertices.Add(l.StartPoint);
+
+                UV.Add(new Vector2());
             }
             Vertices.Add(Edges.Last().EndPoint);
+            UV.Add(new Vector2());
 
             Triangles.Clear();
             for (int i = 1; i < Vertices.Count - 1; i++)
@@ -86,6 +94,28 @@ namespace GeometricUtilities
 
                 Triangles.AddRange(tmp);
             }
+        }
+        //*********************************************************************************
+        private bool containsPoint(Vector3[] arr, Vector3 point, int decimals)
+        {
+            foreach (Vector3 v in arr)
+            {
+                if (almostEqual(v, point, decimals))
+                    return true;
+            }
+
+            return false;
+        }
+        private bool almostEqual(Vector3 a, Vector3 b, int decimals)
+        {
+            if (Math.Round(a.x, decimals) == Math.Round(b.x, decimals)
+                    && Math.Round(a.y, decimals) == Math.Round(b.y, decimals)
+                    && Math.Round(a.z, decimals) == Math.Round(b.z, decimals))
+            {
+                return true;
+            }
+            else
+                return false;
         }
         //*********************************************************************************
         public void DrawTriangles()
