@@ -1,6 +1,8 @@
-﻿using System.Collections;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using GeometricUtilities;
 
@@ -10,32 +12,45 @@ namespace MeshSection
     {
         public bool CreateSection;
         public Transform CuttingPlane;
-        public GameObject Section;
 
         private Mesh m_mesh;
         private List<Line> m_lines;
         private List<Vector3> m_intersectionPoints;
         private List<ReferencedPoint> m_projections;
         private Map2D m_plane;
-
+        private Shape m_shape;
+        private GameObject m_section;
+        //*********************************************************************************
         #region Behaviour methods
         // Start is called before the first frame update
         void Start()
         {
-
+            Initialize();
         }
         // Update is called once per frame
         void Update()
         {
-
+            if (CreateSection)
+            {
+                ComputeSection();
+                CreateSection = false;
+            }
         }
         #endregion
-        void OnDrawGizmos() //Change for update when stop debugging
+        //*********************************************************************************
+        void Initialize()
         {
-            Initialize();
-
+            m_mesh = this.GetComponent<MeshFilter>().mesh;
+            m_lines = new List<Line>();
+            m_intersectionPoints = new List<Vector3>();
+            //m_projections = new List<ReferencedPoint>();
+            m_plane = new Map2D(new Plane(CuttingPlane.forward, CuttingPlane.position));
+            m_section = null;
+        }
+        void ComputeSection()
+        {
             Plane cuttingPlane = new Plane(CuttingPlane.up, CuttingPlane.position);
-            Shape section = new Shape();
+            m_shape = new Shape();
 
             //Get the intersection points and the lines that generate the solid
             for (int i = 0; i < m_mesh.triangles.Length; i += 3)
@@ -85,90 +100,39 @@ namespace MeshSection
                         m_intersectionPoints.Add(intersect_3.Value);
                 }
 
-                //Setup connections
-                //reference_1.AddConnection(reference_2);
-                //reference_1.AddConnection(reference_3);
-                //reference_2.AddConnection(reference_1);
-                //reference_2.AddConnection(reference_3);
-                //reference_3.AddConnection(reference_1);
-                //reference_3.AddConnection(reference_2);
-
                 //Get the first reference not null
                 if (references.Count > 0)
                 {
                     //set a new line
                     Line lin = new Line(references[0].Original, references[1].Original);
-                    section.AddLine(lin);
-                    //lin.DrawGizmos(Color.blue);
-
-                    if (m_projections.Where(o => o.Original == references[0].Original).Count() > 0)
-                    {
-                        m_projections.Where(o => o.Original == references[0].Original).First().AddConnection(references[1]);
-                    }
-                    else if (m_projections.Where(o => o.Original == references[1].Original).Count() > 0)
-                    {
-                        m_projections.Where(o => o.Original == references[1].Original).First().AddConnection(references[0]);
-                    }
-                    else
-                    {
-                        references[0].AddConnection(references[1]);
-                        m_projections.Add(references[0]);
-                    }
+                    m_shape.AddLine(lin);
                 }
             }
 
-            section.SetSortedVertices();
+            if (m_shape.Edges.Count == 0)
+                return;
 
-            //for (int i = 0; i < section.Vertices.Count - 1; i++)
-            //{
-            //    Gizmos.color = Color.blue;
-            //    Gizmos.DrawLine(section.Vertices[i], section.Vertices[i + 1]);
-            //}
-
-            section.ComputeMesh();
-            //section.DrawShape();
-            //section.DrawTriangles();
-            //*********************************************************************************
-            if (true)
+            //Sort the points and generate a closed shape
+            m_shape.SetSortedVertices();
+            //Compute the mesh, triangles and vertices
+            m_shape.ComputeMesh();
+            //Instantiate the section
+            if(m_section == null)
             {
-                Mesh section_mesh = Section.GetComponent<MeshFilter>().mesh;
-                section_mesh.Clear();
-                section_mesh.vertices = section.Vertices.ToArray();
-                section_mesh.triangles = section.Triangles.ToArray();
-                section_mesh.uv = section.UV.ToArray();
-                section_mesh.RecalculateTangents();
-                section_mesh.RecalculateNormals();
-                section_mesh.Optimize();
+                m_section = new GameObject(this.name + "_section");
+                m_section = GameObject.Instantiate(m_section, this.transform);
+                m_section.AddComponent<MeshRenderer>();
+                m_section.AddComponent<MeshFilter>();
+            }
 
-                CreateSection = false;
-            }
-            //*********************************************************************************
-            //Debug shapes
-            Draw();
-        }
-        //*********************************************************************************
-        void Initialize()
-        {
-            m_mesh = this.GetComponent<MeshFilter>().mesh;
-            m_lines = new List<Line>();
-            m_intersectionPoints = new List<Vector3>();
-            m_projections = new List<ReferencedPoint>();
-            m_plane = new Map2D(new Plane(CuttingPlane.forward, CuttingPlane.position));
-        }
-        //*********************************************************************************
-        void Draw()
-        {
-            foreach (Line line in m_lines)
-            {
-                line.DrawGizmos(Color.yellow);
-            }
-            foreach (Vector3 item in m_intersectionPoints)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(item, 0.02f);
-
-                //UnityEditor.Handles.Label(item, item.ToString());
-            }
+            Mesh section_mesh = m_section.GetComponent<MeshFilter>().mesh;
+            section_mesh.Clear();
+            section_mesh.vertices = m_shape.Vertices.ToArray();
+            section_mesh.triangles = m_shape.Triangles.ToArray();
+            section_mesh.uv = m_shape.UV.ToArray();
+            section_mesh.RecalculateTangents();
+            section_mesh.RecalculateNormals();
+            section_mesh.Optimize();
         }
     }
 }
