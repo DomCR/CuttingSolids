@@ -1,2 +1,2 @@
 # CuttingSolids
-Unity project to cut solids on run time.
+Unity project to cut solids on runtime.
