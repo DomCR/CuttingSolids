@@ -78,33 +78,11 @@ namespace GeometricUtilities
 				return new List<Vector3>();
 			}
 
+			//Get intersections
 			List<Vector3> intersections = new List<Vector3>();
 			intersections.AddRange(getIntersection(m_tvertices[0], m_tvertices[1], position, plane, leftSide, rightSide));
 			intersections.AddRange(getIntersection(m_tvertices[1], m_tvertices[2], position, plane, leftSide, rightSide));
 			intersections.AddRange(getIntersection(m_tvertices[2], m_tvertices[0], position, plane, leftSide, rightSide));
-
-			//foreach (Line edge in Edges)
-			//{
-			//	Vector3? intersection = edge.PlaneIntersection(position, plane);
-
-			//	if (intersection != null)
-			//	{
-			//		//Save the intersection
-			//		intersections.Add(intersection.Value);
-
-			//		TVertex tv = new TVertex();
-			//		tv.Vertex = intersection.Value;
-
-			//		//Add the intersection to create the new triangles
-			//		if (plane.GetSide(edge.StartPoint))
-			//		{
-			//			tv.UV = edge
-			//		}
-
-			//		leftSide.Add(intersection.Value);
-			//		rightSide.Add(intersection.Value);
-			//	}
-			//}
 
 			//Create the triangles
 			right.AddRange(createTriangles(rightSide));
@@ -119,20 +97,6 @@ namespace GeometricUtilities
 			int[] indexes = new int[3];
 			for (int i = 0; i < 3; i++)
 			{
-				//if (mesh.vertices.Contains(Vertices[i]))
-				//{
-				//	indexes[i] = Array.IndexOf(mesh.vertices, Vertices[i]);
-				//}
-				//else
-				//{
-				//	List<Vector3> vertices = new List<Vector3>(mesh.vertices);
-				//	vertices.Add(Vertices[i]);
-				//	mesh.vertices = vertices.ToArray();
-
-				//	indexes[i] = mesh.vertices.Length - 1;
-				//}
-
-
 				indexes[i] = source.vertices.Length + i;
 			}
 
@@ -153,8 +117,8 @@ namespace GeometricUtilities
 			dest.SetTriangles(triangles, 0);
 
 			//dest.RecalculateTangents();
-			dest.RecalculateNormals();
-			dest.Optimize();
+			//dest.RecalculateNormals();
+			//dest.Optimize();
 
 			return dest;
 		}
@@ -166,10 +130,35 @@ namespace GeometricUtilities
 			}
 		}
 		//************************************************************************************
-		public static Mesh CreateMesh(List<Triangle> triangles)
+		public static Mesh CreateMesh(List<Triangle> input)
 		{
+			List<Vector3> vertices = new List<Vector3>();
+			List<Vector3> normals = new List<Vector3>();
+			List<Vector2> uvs = new List<Vector2>();
+			List<int> triangles = new List<int>();
 
-			throw new NotImplementedException();
+			foreach (Triangle item in input)
+			{
+				triangles.AddRange(new int[]
+				{
+					vertices.Count,
+					vertices.Count + 1,
+					vertices.Count + 2
+				});
+
+				vertices.AddRange(item.Vertices);
+				normals.AddRange(item.Normals);
+				uvs.AddRange(item.UVs);
+			}
+
+			Mesh mesh = new Mesh();
+
+			mesh.SetVertices(vertices);
+			mesh.SetNormals(normals);
+			mesh.uv = uvs.ToArray();
+			mesh.triangles = triangles.ToArray();
+
+			return mesh;
 		}
 		//************************************************************************************
 		private void createEdges()
@@ -225,14 +214,15 @@ namespace GeometricUtilities
 		{
 			List<Triangle> triangles = new List<Triangle>();
 
-			if (vertices.Count == 3)
+			//Create as many triangles as need
+			for (int i = 0; i + 2 < vertices.Count; i++)
 			{
-				triangles.Add(new Triangle(vertices[0], vertices[1], vertices[2]));
-			}
-			else
-			{
-				//Create as many triangles as need
-				for (int i = 0; i + 2 < vertices.Count; i++)
+				//Make sure they are in clockwise for the indexes
+				if (Vector3.Dot(Vector3.Cross(vertices[i + 1].Vertex - vertices[i].Vertex, vertices[i + 2].Vertex - vertices[i].Vertex), vertices[i].Normal) < 0)
+				{
+					triangles.Add(new Triangle(vertices[i + 2], vertices[i + 1], vertices[i]));
+				}
+				else
 				{
 					triangles.Add(new Triangle(vertices[i], vertices[i + 1], vertices[i + 2]));
 				}

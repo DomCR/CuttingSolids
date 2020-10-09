@@ -19,6 +19,9 @@ namespace CuttingSolids
 			rightMesh = new Mesh();
 			leftMesh = new Mesh();
 
+			List<Triangle> leftTriangles = new List<Triangle>();
+			List<Triangle> rightTriangles = new List<Triangle>();
+
 			//Get the intersection points and the lines that generate the solid
 			for (int i = 0; i < m_mesh.triangles.Length; i += 3)
 			{
@@ -45,20 +48,24 @@ namespace CuttingSolids
 
 				triangle.Cut(position, plane, out List<Triangle> right, out List<Triangle> left);
 
-				foreach (var item in right)
-				{
-					rightMesh = item.AddToMesh(rightMesh);
-					item.DrawOnDebug(Color.yellow);
-				}
+				leftTriangles.AddRange(left);
+				rightTriangles.AddRange(right);
 
-				foreach (var item in left)
-				{
-					leftMesh = item.AddToMesh(leftMesh);
+				//foreach (var item in right)
+				//{
+				//	rightMesh = item.AddToMesh(rightMesh);
+				//	item.DrawOnDebug(Color.yellow);
+				//}
 
-					item.DrawOnDebug(Color.green);
-				}
-
+				//foreach (var item in left)
+				//{
+				//	leftMesh = item.AddToMesh(leftMesh);
+				//	item.DrawOnDebug(Color.green);
+				//}
 			}
+
+			rightMesh = Triangle.CreateMesh(rightTriangles);
+			leftMesh = Triangle.CreateMesh(leftTriangles);
 		}
 		//************************************************************************************
 		/// <summary>
