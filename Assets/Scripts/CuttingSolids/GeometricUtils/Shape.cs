@@ -19,9 +19,13 @@ namespace GeometricUtilities
 		public void AddLine(Line edge)
 		{
 			Edges.Add(edge);
+			Vertices.AddRange(edge.GetPoints());
 		}
-		public void SetSortedVertices()
+		public void SortVertices()
 		{
+			if (!Edges.Any())
+				return;
+
 			Vertices.Clear();
 			List<Line> sortedLines = new List<Line>();
 			List<Line> edgesCopy = new List<Line>();
@@ -90,6 +94,52 @@ namespace GeometricUtilities
 				Triangles.AddRange(tmp);
 			}
 		}
+		public List<Triangle> CreateTriangles(Vector3 normal)
+		{
+			if (!Edges.Any())
+				return new List<Triangle>(); ;
+
+			List<Triangle> triangles = new List<Triangle>();
+
+			//Clear the vertices
+			Vertices.Clear();
+			UV.Clear();
+
+			//Create the new vertices with the uv
+			foreach (Line l in Edges)
+			{
+				Vertices.Add(l.StartPoint);
+				UV.Add(new Vector2());
+			}
+
+			Vertices.Add(Edges.Last().EndPoint);
+			UV.Add(new Vector2());
+
+			//Create the triangles
+			for (int i = 1; i < Vertices.Count - 1; i++)
+			{
+				List<Vector3> vertices = new List<Vector3>
+				{
+					Vertices[0],
+					Vertices[i ],
+					Vertices[i +1]
+				};
+				List<Vector3> normals = new List<Vector3>
+				{
+					normal,normal,normal
+				};
+				List<Vector2> uvs = new List<Vector2>
+				{
+					UV[0],
+					UV[i ],
+					UV[i + 1]
+				};
+
+				triangles.Add(new Triangle(vertices, normals, uvs));
+			}
+
+			return triangles;
+		}
 		//*********************************************************************************
 		private bool containsPoint(Vector3[] arr, Vector3 point, int decimals)
 		{
@@ -113,6 +163,19 @@ namespace GeometricUtilities
 				return false;
 		}
 		//*********************************************************************************
+		public void DrawTrianglesOnDebug()
+		{
+			if (!Vertices.Any())
+				return;
+
+			Vector3 pivot = Vertices[0];
+			for (int i = 1; i < Vertices.Count - 1; i++)
+			{
+				new Line(pivot, Vertices[i]).DrawOnDebug(Color.green);
+				new Line(pivot, Vertices[i + 1]).DrawOnDebug(Color.green);
+				new Line(Vertices[i], Vertices[i + 1]).DrawOnDebug(Color.green);
+			}
+		}
 		public void DrawTriangles()
 		{
 			Gizmos.color = Color.blue;

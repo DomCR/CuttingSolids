@@ -114,7 +114,7 @@ namespace MeshSection
 				return;
 
 			//Sort the points and generate a closed shape
-			m_shape.SetSortedVertices();
+			m_shape.SortVertices();
 			//Compute the mesh, triangles and vertices
 			m_shape.ComputeMesh();
 

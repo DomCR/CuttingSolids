@@ -84,6 +84,13 @@ namespace GeometricUtilities
 			intersections.AddRange(getIntersection(m_tvertices[1], m_tvertices[2], position, plane, leftSide, rightSide));
 			intersections.AddRange(getIntersection(m_tvertices[2], m_tvertices[0], position, plane, leftSide, rightSide));
 
+			if (intersections.Count > 1)
+			{
+				new Line(m_tvertices[0].Vertex, m_tvertices[1].Vertex).DrawOnDebug(Color.blue);
+				new Line(m_tvertices[1].Vertex, m_tvertices[2].Vertex).DrawOnDebug(Color.blue);
+				new Line(m_tvertices[2].Vertex, m_tvertices[0].Vertex).DrawOnDebug(Color.blue);
+			}
+
 			//Create the triangles
 			right.AddRange(createTriangles(rightSide));
 			left.AddRange(createTriangles(leftSide));
@@ -129,6 +136,18 @@ namespace GeometricUtilities
 				item.DrawOnDebug(color);
 			}
 		}
+		public void DrawNCross(Color color)
+		{
+			foreach (var item in Edges)
+			{
+				item.DrawOnDebug(color);
+			}
+
+			for (int i = 0; i < 2; i++)
+			{
+				new Line(Edges[i].StartPoint, Edges[i + 1].MiddlePoint()).DrawOnDebug(Color.red);
+			}
+		}
 		//************************************************************************************
 		public static Mesh CreateMesh(List<Triangle> input)
 		{
@@ -158,6 +177,11 @@ namespace GeometricUtilities
 			mesh.uv = uvs.ToArray();
 			mesh.triangles = triangles.ToArray();
 
+			mesh.RecalculateBounds();
+			mesh.RecalculateNormals();
+			mesh.RecalculateTangents();
+			mesh.Optimize();
+
 			return mesh;
 		}
 		//************************************************************************************
@@ -167,18 +191,13 @@ namespace GeometricUtilities
 			Edges.Add(new Line(Vertices[1], Vertices[2]));
 			Edges.Add(new Line(Vertices[2], Vertices[0]));
 		}
-		private List<Vector3> getIntersection(TVertex start, TVertex end, Vector3 position, Plane plane, List<TVertex> leftSide, List<TVertex> rightSide)
+		private Vector3? getIntersection(TVertex start, TVertex end, Vector3 position, Plane plane, List<TVertex> leftSide, List<TVertex> rightSide)
 		{
-			List<Vector3> intersections = new List<Vector3>();
-
 			Line edge = new Line(start.Vertex, end.Vertex);
 			Vector3? intersection = edge.PlaneIntersection(position, plane);
 
 			if (intersection != null)
 			{
-				//Save the intersection
-				intersections.Add(intersection.Value);
-
 				TVertex left = new TVertex();
 				TVertex right = new TVertex();
 				left.Vertex = intersection.Value;
@@ -207,7 +226,47 @@ namespace GeometricUtilities
 				rightSide.Add(right);
 			}
 
-			return intersections;
+			return intersection;
+		}
+		private Vector3? getIntersection(TVertex start, TVertex end, Vector3 position, Plane plane, out TVertex? leftSide, out TVertex? rightSide)
+		{
+			Line edge = new Line(start.Vertex, end.Vertex);
+			Vector3? intersection = edge.PlaneIntersection(position, plane);
+
+			leftSide = null;
+			rightSide = null;
+
+			if (intersection != null)
+			{
+				TVertex left = new TVertex();
+				TVertex right = new TVertex();
+				left.Vertex = intersection.Value;
+				right.Vertex = intersection.Value;
+
+
+				//Add the intersection to create the new triangles
+				if (plane.GetSide(edge.StartPoint))
+				{
+					left.UV = end.UV;
+					left.Normal = end.Normal;
+
+					right.UV = start.UV;
+					right.Normal = start.Normal;
+				}
+				else
+				{
+					right.UV = end.UV;
+					right.Normal = end.Normal;
+
+					left.UV = start.UV;
+					left.Normal = start.Normal;
+				}
+
+				leftSide = left;
+				rightSide = right;
+			}
+
+			return intersection;
 		}
 		//************************************************************************************
 		private static List<Triangle> createTriangles(List<TVertex> vertices)

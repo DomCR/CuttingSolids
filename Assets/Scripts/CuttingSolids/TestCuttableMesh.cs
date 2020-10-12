@@ -29,7 +29,7 @@ public class TestCuttableMesh : MonoBehaviour
 		m_cutter.CutByPlane(CuttingPlane.position, plane, out Mesh right, out Mesh left);
 
 		//Tranform the mesh
-		RightMesh.mesh = right;
-		LeftMesh.mesh = left;
+		//RightMesh.mesh = right;
+		//LeftMesh.mesh = left;
 	}
 }

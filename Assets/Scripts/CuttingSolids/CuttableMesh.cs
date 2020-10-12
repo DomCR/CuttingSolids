@@ -16,8 +16,7 @@ namespace CuttingSolids
 		//************************************************************************************
 		public void CutByPlane(Vector3 position, Plane plane, out Mesh rightMesh, out Mesh leftMesh)
 		{
-			rightMesh = new Mesh();
-			leftMesh = new Mesh();
+			Shape shape = new Shape();
 
 			List<Triangle> leftTriangles = new List<Triangle>();
 			List<Triangle> rightTriangles = new List<Triangle>();
@@ -46,36 +45,29 @@ namespace CuttingSolids
 
 				Triangle triangle = new Triangle(vertices, normals, uvs);
 
-				triangle.Cut(position, plane, out List<Triangle> right, out List<Triangle> left);
+				var intersections = triangle.Cut(position, plane, out List<Triangle> right, out List<Triangle> left);
+
+				if (intersections.Count == 2)
+					shape.AddLine(new Line(intersections[0], intersections[1]));
 
 				leftTriangles.AddRange(left);
 				rightTriangles.AddRange(right);
-
-				//foreach (var item in right)
-				//{
-				//	rightMesh = item.AddToMesh(rightMesh);
-				//	item.DrawOnDebug(Color.yellow);
-				//}
-
-				//foreach (var item in left)
-				//{
-				//	leftMesh = item.AddToMesh(leftMesh);
-				//	item.DrawOnDebug(Color.green);
-				//}
 			}
+
+			shape.SortVertices();
+
+			leftTriangles.AddRange(shape.CreateTriangles(plane.normal));
+			rightTriangles.AddRange(shape.CreateTriangles(plane.normal));
+
+			shape.DrawTrianglesOnDebug();
+
+			//foreach (var item in leftTriangles)
+			//{
+			//	item.DrawNCross(Color.yellow);
+			//}
 
 			rightMesh = Triangle.CreateMesh(rightTriangles);
 			leftMesh = Triangle.CreateMesh(leftTriangles);
-		}
-		//************************************************************************************
-		/// <summary>
-		/// Create a reference point if this intersects with the plane.
-		/// </summary>
-		/// <param name="edge"></param>
-		void createReference(Line edge, Vector3 position, Plane plane)
-		{
-			Vector3? intersection = edge.PlaneIntersection(position, plane);
-
 		}
 	}
 }

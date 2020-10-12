@@ -27,6 +27,10 @@ namespace GeometricUtilities
 			StartPoint = transform.TransformPoint(start);
 			EndPoint = transform.TransformPoint(end);
 		}
+		public Vector3 MiddlePoint()
+		{
+			return (StartPoint + EndPoint) / 2;
+		}
 		public Vector3? PlaneIntersection(Vector3 position, Plane plane, bool insideLine = true)
 		{
 			return PlaneIntersection(plane.normal, position, insideLine);
