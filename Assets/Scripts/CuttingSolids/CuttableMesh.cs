@@ -47,8 +47,10 @@ namespace CuttingSolids
 
 				var intersections = triangle.Cut(position, plane, out List<Triangle> right, out List<Triangle> left);
 
-				if (intersections.Count == 2)
-					shape.AddLine(new Line(intersections[0], intersections[1]));
+				if (intersections.Count == 2 && intersections[0] != intersections[1])
+				{
+					shape.AddEdge(new Line(intersections[0], intersections[1]));
+				}
 
 				leftTriangles.AddRange(left);
 				rightTriangles.AddRange(right);
@@ -56,7 +58,7 @@ namespace CuttingSolids
 
 			shape.SortVertices();
 
-			leftTriangles.AddRange(shape.CreateTriangles(plane.normal));
+			leftTriangles.AddRange(shape.CreateTriangles(-plane.normal));
 			rightTriangles.AddRange(shape.CreateTriangles(plane.normal));
 
 			shape.DrawTrianglesOnDebug();

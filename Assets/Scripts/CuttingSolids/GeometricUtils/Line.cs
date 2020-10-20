@@ -19,15 +19,18 @@ namespace GeometricUtilities
 
 		public Line(Vector3 start, Vector3 end)
 		{
+			//if (start == end)
+			//	throw new ArgumentException("The points must be different.");
+
 			StartPoint = start;
 			EndPoint = end;
 		}
-		public Line(Vector3 start, Vector3 end, Transform transform)
+		public Line(Vector3 start, Vector3 end, Transform transform) : this(start, end)
 		{
 			StartPoint = transform.TransformPoint(start);
 			EndPoint = transform.TransformPoint(end);
 		}
-		public Vector3 MiddlePoint()
+		public Vector3 MidPoint()
 		{
 			return (StartPoint + EndPoint) / 2;
 		}

@@ -7,7 +7,6 @@ using UnityEngine;
 
 namespace GeometricUtilities
 {
-
 	public class Triangle
 	{
 		public List<Vector3> Vertices { get { return m_tvertices.Select(o => o.Vertex).ToList(); } }
@@ -30,6 +29,12 @@ namespace GeometricUtilities
 				});
 			}
 
+			//Make sure they are in clockwise for the indexes
+			if (Vector3.Dot(Vector3.Cross(m_tvertices[1].Vertex - m_tvertices[0].Vertex, m_tvertices[2].Vertex - m_tvertices[0].Vertex), m_tvertices[0].Normal) < 0)
+			{
+				m_tvertices.Reverse();
+			}
+
 			createEdges();
 		}
 		private Triangle(TVertex vertex1, TVertex vertex2, TVertex vertex3)
@@ -38,8 +43,15 @@ namespace GeometricUtilities
 			m_tvertices.Add(vertex2);
 			m_tvertices.Add(vertex3);
 
+			//Make sure they are in clockwise for the indexes
+			if (Vector3.Dot(Vector3.Cross(m_tvertices[1].Vertex - m_tvertices[0].Vertex, m_tvertices[2].Vertex - m_tvertices[0].Vertex), m_tvertices[0].Normal) < 0)
+			{
+				m_tvertices.Reverse();
+			}
+
 			createEdges();
 		}
+		private Triangle(List<TVertex> vertices) : this(vertices[0], vertices[1], vertices[2]) { }
 		//************************************************************************************
 		public List<Vector3> Cut(Vector3 position, Plane plane, out List<Triangle> right, out List<Triangle> left)
 		{
@@ -80,20 +92,63 @@ namespace GeometricUtilities
 
 			//Get intersections
 			List<Vector3> intersections = new List<Vector3>();
-			intersections.AddRange(getIntersection(m_tvertices[0], m_tvertices[1], position, plane, leftSide, rightSide));
-			intersections.AddRange(getIntersection(m_tvertices[1], m_tvertices[2], position, plane, leftSide, rightSide));
-			intersections.AddRange(getIntersection(m_tvertices[2], m_tvertices[0], position, plane, leftSide, rightSide));
 
-			if (intersections.Count > 1)
+			for (int i = 0, j = 1, k = 2; i < 3; i++, j++, k++)
 			{
-				new Line(m_tvertices[0].Vertex, m_tvertices[1].Vertex).DrawOnDebug(Color.blue);
-				new Line(m_tvertices[1].Vertex, m_tvertices[2].Vertex).DrawOnDebug(Color.blue);
-				new Line(m_tvertices[2].Vertex, m_tvertices[0].Vertex).DrawOnDebug(Color.blue);
+				int first = i;
+				int second = j % 3;
+				int third = k % 3;
+
+				var intersection = getIntersection(m_tvertices[first], m_tvertices[second], position, plane,
+					leftSide, rightSide);
+
+				if (intersection == null)
+					continue;
+
+				intersections.Add(intersection.Value);
+
+				if (leftSide.Count == 3)
+				{
+					left.AddRange(createTriangles(leftSide));
+
+					//Remove triangle vertex
+					if (leftSide.Contains(m_tvertices[first]))
+					{
+						leftSide.Remove(m_tvertices[first]);
+					}
+					if (leftSide.Contains(m_tvertices[second]))
+					{
+						leftSide.Remove(m_tvertices[second]);
+					}
+				}
+				if (rightSide.Count == 3)
+				{
+					right.AddRange(createTriangles(rightSide));
+
+					//Remove triangle vertex
+					if (rightSide.Contains(m_tvertices[first]))
+					{
+						rightSide.Remove(m_tvertices[first]);
+					}
+					if (rightSide.Contains(m_tvertices[second]))
+					{
+						rightSide.Remove(m_tvertices[second]);
+					}
+				}
+
 			}
 
-			//Create the triangles
-			right.AddRange(createTriangles(rightSide));
-			left.AddRange(createTriangles(leftSide));
+			//if (intersections.Count > 1)
+			//{
+			//	this.DrawOnDebug(Color.green);
+
+			//	//new Line(m_tvertices[0].Vertex, m_tvertices[1].Vertex).DrawOnDebug(Color.blue);
+			//	//new Line(m_tvertices[1].Vertex, m_tvertices[2].Vertex).DrawOnDebug(Color.blue);
+			//	//new Line(m_tvertices[2].Vertex, m_tvertices[0].Vertex).DrawOnDebug(Color.blue);
+
+			//	left.ForEach(o => o.DrawNCross(Color.yellow));
+			//	//right.ForEach(o => o.DrawNCross(Color.blue));
+			//}
 
 			return intersections;
 		}
@@ -145,7 +200,7 @@ namespace GeometricUtilities
 
 			for (int i = 0; i < 2; i++)
 			{
-				new Line(Edges[i].StartPoint, Edges[i + 1].MiddlePoint()).DrawOnDebug(Color.red);
+				new Line(Edges[i].StartPoint, Edges[i + 1].MidPoint()).DrawOnDebug(Color.red);
 			}
 		}
 		//************************************************************************************
@@ -276,15 +331,12 @@ namespace GeometricUtilities
 			//Create as many triangles as need
 			for (int i = 0; i + 2 < vertices.Count; i++)
 			{
-				//Make sure they are in clockwise for the indexes
-				if (Vector3.Dot(Vector3.Cross(vertices[i + 1].Vertex - vertices[i].Vertex, vertices[i + 2].Vertex - vertices[i].Vertex), vertices[i].Normal) < 0)
-				{
-					triangles.Add(new Triangle(vertices[i + 2], vertices[i + 1], vertices[i]));
-				}
-				else
-				{
-					triangles.Add(new Triangle(vertices[i], vertices[i + 1], vertices[i + 2]));
-				}
+				if (vertices[i].Vertex == vertices[i + 1].Vertex ||
+					vertices[i].Vertex == vertices[i + 2].Vertex ||
+					vertices[i + 1].Vertex == vertices[i + 2].Vertex)
+					continue;
+
+				triangles.Add(new Triangle(vertices[i], vertices[i + 1], vertices[i + 2]));
 			}
 
 			return triangles;

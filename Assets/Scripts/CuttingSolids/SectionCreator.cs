@@ -106,7 +106,7 @@ namespace MeshSection
 				{
 					//set a new line
 					Line lin = new Line(references[0].Original, references[1].Original);
-					m_shape.AddLine(lin);
+					m_shape.AddEdge(lin);
 				}
 			}
 

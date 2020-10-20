@@ -58,17 +58,16 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\CuttingSolids\SectionCreator.cs" />
     <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\ReferencedPoint.cs" />
+    <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\TVertex.cs" />
     <Compile Include="Assets\Scripts\CuttingSolids\CuttableObject.cs" />
     <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\Line.cs" />
-    <Compile Include="Assets\Scripts\TestingScripts\GeneratedMesh.cs" />
-    <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\Map2D.cs" />
-    <Compile Include="Assets\Scripts\TestingScripts\Cutter.cs" />
-    <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\Shape.cs" />
-    <Compile Include="Assets\Scripts\TestingScripts\MeshTriangle.cs" />
-    <Compile Include="Assets\Scripts\CuttingSolids\CuttableMesh.cs" />
     <Compile Include="Assets\Scripts\CuttingSolids\TestCuttableMesh.cs" />
+    <Compile Include="Assets\Scripts\CuttingSolids\CuttableMesh.cs" />
     <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\Triangle.cs" />
-    <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\TVertex.cs" />
+    <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\Map2D.cs" />
+    <Compile Include="Assets\Scripts\CuttingSolids\GeometricUtils\Shape.cs" />
+    <Compile Include="Assets\Examples\simple_cut\PlaneMovement.cs" />
+    <Compile Include="Assets\Examples\simple_cut\ObejctToCut.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
