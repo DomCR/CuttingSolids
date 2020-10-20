@@ -61,13 +61,6 @@ namespace CuttingSolids
 			leftTriangles.AddRange(shape.CreateTriangles(-plane.normal));
 			rightTriangles.AddRange(shape.CreateTriangles(plane.normal));
 
-			shape.DrawTrianglesOnDebug();
-
-			//foreach (var item in leftTriangles)
-			//{
-			//	item.DrawNCross(Color.yellow);
-			//}
-
 			rightMesh = Triangle.CreateMesh(rightTriangles);
 			leftMesh = Triangle.CreateMesh(leftTriangles);
 		}
